@@ -15,6 +15,7 @@
     "device-storage:music":{ "access": "readonly" },
     "device-storage:videos":{ "access": "readonly" },
     "device-storage:apps":{ "access": "readonly" },
+    "device-storage:sdcard":{ "access": "readonly" },
     "webapps-manage":{},
     "permissions":{},
     "settings":{ "access": "readwrite" },

@@ -527,7 +527,7 @@ onLocalized(function wifiSettings() {
       return '';
     }
 
-    function setPassword(password, identity) {
+    function setPassword(password, identity, ca_cert) {
       var key = getKeyManagement();
       if (key == 'WEP') {
         network.wep = password;
@@ -538,8 +538,83 @@ onLocalized(function wifiSettings() {
         if (identity && identity.length) {
           network.identity = identity;
         }
+        if (ca_cert)  {
+          network.ca_cert = ca_cert;
+        }
       }
       network.keyManagement = key;
+    }
+
+    function loadCerts(storage, lstCaCert, recordedCA, pathBase) {
+
+      var directory = "certs";
+      var workingDir = pathBase + "/" + directory + "/";
+
+      var cursor = storage.enumerate(directory);
+      cursor.onsuccess = function () {
+        var file = cursor.result;
+        if (file) {
+          var fullFileName = workingDir + file.name;
+          addOpts(lstCaCert, fullFileName, file.name, (recordedCA && (recordedCA === fullFileName)));
+          cursor.continue();
+        }
+      }
+    }
+
+    function removeCAsLst(lstCaCert) {
+
+      if (lstCaCert) {
+        for (var i = lstCaCert.options.length-1; i > 0; i--) {
+          lstCaCert.options.remove(i);
+        } 
+      }
+      lstCaCert.options[0].selected = true;
+      lstCaCert.selectedIndex = 0;
+    }
+    
+    function addOpts(lstCaCert, value, txt, selected) {
+
+      var opt = new Option();
+      opt.value = value;
+      opt.text = txt;
+      opt.selected = selected;
+      lstCaCert.options.add(opt);
+      if (opt.selected) {
+        lstCaCert.selectedIndex = opt.index;
+      }
+    }
+
+    function loadCertList(lstCaCert, recordedCA) {
+      
+      var pathBase = "sdcard";
+      if (!navigator.getDeviceStorage) {
+        return;
+      }    
+
+      var storage = navigator.getDeviceStorage(pathBase);     
+      if (storage == null) {
+        return; 
+      }
+      
+      removeCAsLst(lstCaCert);
+      
+      var statReq = storage.stat();
+      statReq.onsuccess = function(e) {
+        var stats = e.target.result;
+        switch (stats.state) {
+        case 'available':
+          loadCerts(storage, lstCaCert, recordedCA, "/" + pathBase);                
+          break;
+        case 'unavailable':
+          console.log('sdcard-not-exist');
+          break;
+        case 'shared':
+          console.log('sdcard-in-use');
+          break;
+        default:
+          console.log('unknown-error');
+        }
+      };     
     }
 
     // generic wifi property dialog
@@ -547,7 +622,7 @@ onLocalized(function wifiSettings() {
       var dialog = document.getElementById(dialogID);
 
       // authentication fields
-      var identity, password, showPassword;
+      var identity, password, showPassword, ca_cert;
       if (dialogID != 'wifi-status') {
         identity = dialog.querySelector('input[name=identity]');
         identity.value = network.identity || '';
@@ -555,6 +630,9 @@ onLocalized(function wifiSettings() {
         password = dialog.querySelector('input[name=password]');
         password.type = 'password';
         password.value = network.password || '';
+
+        ca_cert = dialog.querySelector('select[name=ca_cert]');
+        loadCertList(ca_cert, network.ca_cert);
 
         showPassword = dialog.querySelector('input[name=show-pwd]');
         showPassword.checked = false;
@@ -617,7 +695,7 @@ onLocalized(function wifiSettings() {
           break;
 
         case 'wifi-joinHidden':
-          var security = dialog.querySelector('select');
+          var security = dialog.querySelector('select[name=jh-security]');
           var onSecurityChange = function() {
             key = security.selectedIndex ? security.value : '';
             network.capabilities = [key];
@@ -644,7 +722,7 @@ onLocalized(function wifiSettings() {
       // OK|Cancel buttons
       function submit() {
         if (key) {
-          setPassword(password.value, identity.value);
+          setPassword(password.value, identity.value, ca_cert.options[ca_cert.selectedIndex].value);
         }
         if (callback) {
           callback();
