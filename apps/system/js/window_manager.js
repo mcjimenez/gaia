@@ -57,7 +57,7 @@ var WindowManager = (function() {
   var ftu = null;
   var ftuManifestURL = '';
   var ftuURL = '';
-  var runningFTU = false;
+  var isRunningFirstRunApp = false;
   // keep the reference of inline activity frame here
   var inlineActivityFrame = null;
 
@@ -231,6 +231,7 @@ var WindowManager = (function() {
 
     frame.style.width = appFrame.style.width;
     frame.style.height = appFrame.style.height;
+    frame.style.top = appFrame.offsetTop + 'px';
   }
 
   function setFrameBackgroundBlob(frame, blob, transparent) {
@@ -385,7 +386,7 @@ var WindowManager = (function() {
     // Give the focus to the frame
     frame.focus();
 
-    if (!TrustedUIManager.isVisible()) {
+    if (!TrustedUIManager.isVisible() && !isRunningFirstRunApp) {
       // Set homescreen visibility to false
       toggleHomescreen(false);
     }
@@ -406,7 +407,7 @@ var WindowManager = (function() {
   function windowClosed(frame) {
     // If the FTU is closing, make sure we save this state
     if (frame.src == ftuURL) {
-      runningFTU = false;
+      isRunningFirstRunApp = false;
       document.getElementById('screen').classList.remove('ftu');
       window.asyncStorage.setItem('ftu.enabled', false);
       // Done with FTU, letting everyone know
@@ -847,9 +848,15 @@ var WindowManager = (function() {
   // Switch to a different app
   function setDisplayedApp(origin, callback) {
     var currentApp = displayedApp, newApp = origin || homescreen;
-    // Returns the frame reference of the home screen app.
-    // Restarts the homescreen app if it was killed in the background.
-    var homescreenFrame = ensureHomescreen();
+    var isFirstRunApplication = !currentApp && (origin == ftuURL);
+
+    var homescreenFrame = null;
+    if (!isFirstRunApplication) {
+      // Returns the frame reference of the home screen app.
+      // Restarts the homescreen app if it was killed in the background.
+      homescreenFrame = ensureHomescreen();
+    }
+
     // Discard any existing activity
     stopInlineActivity();
 
@@ -861,7 +868,9 @@ var WindowManager = (function() {
     if (closeFrame && 'setVisible' in closeFrame)
       closeFrame.setVisible(false);
 
-    toggleHomescreen(true);
+    if (!isFirstRunApplication) {
+      toggleHomescreen(true);
+    }
     clearTimeout(openTimer);
     clearTimeout(closeTimer);
     setOpenFrame(null);
@@ -893,8 +902,8 @@ var WindowManager = (function() {
       }
     }
     // Case 2: null --> app
-    else if (!currentApp && newApp != homescreen) {
-      runningFTU = true;
+    else if (isFirstRunApplication) {
+      isRunningFirstRunApp = true;
       openWindow(newApp, function windowOpened() {
         handleInitlogo(function() {
           var mainScreen = document.getElementById('screen');
@@ -1264,8 +1273,8 @@ var WindowManager = (function() {
 
   // If the application tried to close themselves by calling window.close()
   // we will handle that here.
-  // XXX: currently broken, see
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=789392
+  // XXX: this event is fired twice:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=814583
   window.addEventListener('mozbrowserclose', function(e) {
     if (!'frameType' in e.target.dataset)
       return;
@@ -1442,6 +1451,13 @@ var WindowManager = (function() {
     if (!isRunning(origin))
       return;
 
+    // As we can't immediatly remove runningApps entry,
+    // we flag it as being killed in order to avoid trying to remove it twice.
+    // (Check required because of bug 814583)
+    if (runningApps[origin].killed)
+      return;
+    runningApps[origin].killed = true;
+
     // If the app is the currently displayed app, switch to the homescreen
     if (origin === displayedApp) {
       setDisplayedApp(homescreen, function() {
@@ -1553,7 +1569,7 @@ var WindowManager = (function() {
   // Return the object that holds the public API
   return {
     isFtuRunning: function() {
-      return runningFTU;
+      return isRunningFirstRunApp;
     },
     launch: launch,
     kill: kill,
