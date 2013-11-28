@@ -2,6 +2,11 @@
 'use strict';
 
 var Configurator = (function() {
+  // We're going to use the mcc_mnc like a semaphore as well as to store its
+  // value.
+  var mcc_mnc = null;
+  var pendingInstallRequests = [];
+
   var conf = {};
 
   // Path of the single variant configuration file
@@ -101,11 +106,15 @@ var Configurator = (function() {
       }
     };
 
-    function loadSVConfFileSuccess(mcc_mnc, loadedData) {
+    function loadSVConfFileSuccess(loadedData) {
       loadedData[mcc_mnc].forEach(function(app) {
         if (app.manifestURL) {
            singleVariantApps[app.manifestURL] = app;
         }
+      });
+      mcc_mnc = null;
+      pendingInstallRequests.forEach(function eachReq(elto) {
+        elto.callback(getSingleVariantAppConfig(elto.manifestURL));
       });
     }
 
@@ -116,10 +125,10 @@ var Configurator = (function() {
     }
 
     var iccHandler = function(evt) {
-      var mcc_mnc = getMccMnc();
+      mcc_mnc = getMccMnc();
       if (mcc_mnc) {
         loadFile(SINGLE_VARIANT_CONF_FILE,
-                 loadSVConfFileSuccess.bind(undefined, mcc_mnc),
+                 loadSVConfFileSuccess,
                  loadSVConfFileError);
         IccHelper.removeEventListener('iccinfochange', iccHandler);
         // No needed anymore
@@ -165,6 +174,19 @@ var Configurator = (function() {
     }
   }
 
+  /*
+   * Return the single operator app (identify by manifest) or undefined
+   * if the manifesURL doesn't correspond with a SV app
+   */
+  function getSingleVariantAppConfig(manifestURL) {
+    if (manifestURL in singleVariantApps) {
+      var app = singleVariantApps[manifestURL];
+      if (app.screen !== undefined && app.location !== undefined) {
+        return app;
+      }
+    }
+  }
+
   // Auto-initializing
   load();
 
@@ -173,8 +195,13 @@ var Configurator = (function() {
       return conf[section];
     },
 
-    getSingleVariantApps: function() {
-      return singleVariantApps;
+    getSingleVariantApp: function(manifestURL, aCallback) {
+      if (mcc_mnc) {
+        pendingInstallRequests.push({ manifestURL: manifestURL,
+                                      callback: aCallback });
+      } else {
+        aCallback(getSingleVariantAppConfig(manifestURL));
+      }
     },
 
     load: load,

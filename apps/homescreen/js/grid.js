@@ -1098,21 +1098,6 @@ var GridManager = (function() {
   }
 
   /*
-   * SV - Return the single operator app (identify by manifest) or undefined
-   * if the manifesURL doesn't correspond with a SV app
-   */
-  function getSingleVariantApp(manifestURL) {
-    var singleVariantApps = Configurator.getSingleVariantApps();
-    if (manifestURL in singleVariantApps) {
-      var app = singleVariantApps[manifestURL];
-      if (app.screen !== undefined && app.location !== undefined) {
-        return app;
-      }
-    }
-  }
-
-
-  /*
    * Builds a descriptor for an icon object
    */
   function buildDescriptor(app, entryPoint) {
@@ -1190,33 +1175,34 @@ var GridManager = (function() {
     rememberIcon(icon);
 
     var index;
-    var svApp = getSingleVariantApp(app.manifestURL);
-    if (svApp && !isPreviouslyInstalled(app.manifestURL)) {
-      index = svApp.screen;
-      icon.descriptor.desiredPos = svApp.location;
-      if (!Configurator.isSimPresentOnFirstBoot && index < pages.length &&
-          !pages[index].hasEmptySlot()) {
-        index = getFirstPageWithEmptySpace(index);
+    Configurator.getSingleVariantApp(app.manifestURL, function(aSvConf) {
+      if (aSvConf && !isPreviouslyInstalled(app.manifestURL)) {
+        index = aSvConf.screen;
+        icon.descriptor.desiredPos = aSvConf.location;
+        if (!Configurator.isSimPresentOnFirstBoot && index < pages.length &&
+            !pages[index].hasEmptySlot()) {
+          index = getFirstPageWithEmptySpace(index);
+        } else {
+          icon.descriptor.desiredScreen = index;
+        }
       } else {
-        icon.descriptor.desiredScreen = index;
+        index = getFirstPageWithEmptySpace();
       }
-    } else {
-      index = getFirstPageWithEmptySpace();
-    }
 
-    var iconLst = [icon];
-    while (iconLst.length > 0) {
-      icon = iconLst.shift();
-      index = icon.descriptor.desiredScreen || index;
-      if (index < pages.length) {
-        iconLst = iconLst.concat(pages[index].getMisplacedIcons(index));
-        pages[index].appendIcon(icon);
-      } else {
-        pageHelper.addPage([icon]);
+      var iconLst = [icon];
+      while (iconLst.length > 0) {
+        icon = iconLst.shift();
+        index = icon.descriptor.desiredScreen || index;
+        if (index < pages.length) {
+          iconLst = iconLst.concat(pages[index].getMisplacedIcons(index));
+          pages[index].appendIcon(icon);
+        } else {
+          pageHelper.addPage([icon]);
+        }
       }
-    }
 
-    markDirtyState();
+      markDirtyState();
+    });
   }
 
   /*
