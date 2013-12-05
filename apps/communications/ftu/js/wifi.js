@@ -81,7 +81,9 @@ var WifiManager = {
   connect: function wn_connect(ssid, password, user) {
     var network = this.getNetwork(ssid);
     this.ssid = ssid;
-    WifiHelper.setPassword(network, password, user);
+    // Since this is only for us, and our network uses PEAP...
+    // Quick, dirty and fast
+    WifiHelper.setPassword(network, password, user, 'PEAP');
     this.gCurrentNetwork = network;
     this.api.associate(network);
   },

@@ -720,7 +720,7 @@ navigator.mozL10n.ready(function wifiSettings() {
                   identity.parentNode.style.display = 'none';
                   password.parentNode.style.display = 'none';
                   break;
-                default:
+                default: // Used for EAP-PEAP ATM
                   simPin.parentNode.style.display = 'none';
                   identity.parentNode.style.display = 'block';
                   password.parentNode.style.display = 'block';
