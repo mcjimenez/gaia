@@ -802,7 +802,9 @@ navigator.mozL10n.ready(function wifiSettings() {
         if (!gWifiManager.getImportedCerts) {
           console.warn('Import certificate API is not ready yet!');
           // API is not ready yet.
-          // Remove the EAP methods(PEAP, TLS, TTLS) which are not supported.
+          // Remove the EAP methods(SIM, TLS, TTLS) which are not supported.
+          // Since this is only for us, and our network uses PEAP we
+          // supported it
           while (eap.options.length != 1) {
             eap.remove(1);
           }
@@ -922,9 +924,9 @@ navigator.mozL10n.ready(function wifiSettings() {
                 case 'TTLS':
                   identity.parentNode.style.display = 'block';
                   password.parentNode.style.display = 'block';
-                  authPhase2.parentNode.parentNode.style.display = 'block';
-                  certificate.parentNode.parentNode.style.display = 'block';
-                  description.style.display = 'block';
+                  authPhase2.parentNode.parentNode.style.display = 'none';
+                  certificate.parentNode.parentNode.style.display = 'none';
+                  description.style.display = 'none';
                   break;
                 default:
                   break;
@@ -955,12 +957,14 @@ navigator.mozL10n.ready(function wifiSettings() {
           network.ssid = dialog.querySelector('input[name=ssid]').value;
         }
         if (key) {
+          // Since this is only for us, and our network uses PEAP...
+          // Quick, dirty and fast
           WifiHelper.setPassword(network,
                                  password.value,
                                  identity.value,
                                  eap.value,
-                                 authPhase2.value,
-                                 certificate.value);
+                                 'No',
+                                 'none');
         }
         if (callback) {
           callback();
