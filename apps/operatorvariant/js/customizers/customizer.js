@@ -1,3 +1,6 @@
+/* global Resources */
+/* exported Customizer */
+
 'use strict';
 // Extend this class for creating a new customizer and provide
 // a set() method. It is expected set() returns nothing and accept
@@ -10,13 +13,16 @@ var Customizer = (function(setting, resourceType, onerror) {
     window.addEventListener('customization', function eventHandler(event) {
       if (event.detail.setting === setting) {
         window.removeEventListener('customization', eventHandler);
-        var URI = event.detail.value;
-        Resources.load(URI, resourceType, self.set,
-          function onerrorRetrieving(status) {
-            console.error('Customizer.js: Error retrieving the resource.');
-            onerror && onerror(status);
-          }
-        );
+        var value = event.detail.value;
+        if (resourceType === 'data') {
+          self.set(value);
+        } else {
+          Resources.load(value, resourceType, self.set,
+            function onerrorRetrieving(status) {
+              console.error('Customizer.js: Error retrieving the resource.');
+              onerror && onerror(status);
+          });
+        }
       }
     });
   };
