@@ -1,4 +1,4 @@
-/* global UIManager, MobileOperator, Navigation, utils,
+/* global UIManager, MobileOperator, Navigation, utils, DataMobile,
           ConfirmDialog, SimContactsImporter */
 
 'use strict';
@@ -223,6 +223,7 @@ var SimManager = (function() {
     if (icc.unlocked) {
       return;
     }
+    DataMobile.showWaitScreen();
     this._unlockingIcc = icc;
 
     switch (icc.mozIcc.cardState) {
@@ -401,6 +402,7 @@ var SimManager = (function() {
   },
 
   hideScreen: function sm_hideScreen() {
+    DataMobile.setTimeOutTohideWaitScreen();
     UIManager.unlockSimScreen.classList.remove('show');
     UIManager.pincodeScreen.classList.remove('show');
     UIManager.pukcodeScreen.classList.remove('show');

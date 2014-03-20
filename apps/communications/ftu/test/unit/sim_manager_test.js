@@ -9,6 +9,7 @@ require(
   '/shared/test/unit/mocks/mock_navigator_moz_icc_manager.js');
 requireApp('communications/ftu/test/unit/mock_ui_manager.js');
 requireApp('communications/ftu/test/unit/mock_l10n.js');
+requireApp('communications/ftu/test/unit/mock_data_mobile.js');
 
 requireApp('communications/ftu/js/sim_manager.js');
 requireApp('communications/ftu/js/navigation.js');
@@ -16,7 +17,8 @@ requireApp('communications/ftu/js/navigation.js');
 require('/shared/test/unit/load_body_html_helper.js');
 
 var mocksHelperForSimManager = new MocksHelper([
-  'UIManager'
+  'UIManager',
+  'DataMobile'
 ]).init();
 
 suite('sim mgmt >', function() {
