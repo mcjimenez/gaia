@@ -133,6 +133,20 @@ window.GaiaGrid = (function(win) {
     return null;
   };
 
+  proto.getPostLastIcon = function() {
+    var items = this._grid.items;
+    for (var i = this._grid.items.length - 1; i >= 0; i--) {
+      if (!(items[i] instanceof Divider)) {
+        return i;
+      }
+    }
+  };
+
+  proto.rearrange = function(orig, dst) {
+    if (typeof this._grid.dragdrop.rearrange === 'function') {
+      this._grid.dragdrop.rearrange(orig, dst);
+    }
+  };
 
   /**
    * We clone the scoped stylesheet and append

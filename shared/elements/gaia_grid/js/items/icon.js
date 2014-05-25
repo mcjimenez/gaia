@@ -60,7 +60,7 @@
       if (!icons) {
         return ICON_PATH_BY_DEFAULT;
       }
-      
+
       // Create a list with the sizes and order it by descending size
       var list = Object.keys(icons).map(function(size) {
         return size;
@@ -78,7 +78,7 @@
       var accurateSize = list[0]; // The biggest icon available
       for (var i = 0; i < length; i++) {
         var size = list[i];
-        
+
         if (size < maxSize) {
           break;
         }

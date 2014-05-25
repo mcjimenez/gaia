@@ -98,6 +98,5 @@
   };
 
   exports.app = new App();
-  exports.app.init();
 
 }(window));
