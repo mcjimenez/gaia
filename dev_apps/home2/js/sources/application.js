@@ -1,5 +1,5 @@
 'use strict';
-/* global Icon, Configurator */
+/* global Icon, configurator */
 
 (function(exports) {
 
@@ -39,8 +39,7 @@
      * Adds a new application to the layout when the user installed it
      * from market
      *
-     * @param {Application} app
-     *                      The application object
+     * @param {Application} application - The application object
      */
     function install(application) {
       /* jshint validthis: true */
@@ -49,30 +48,47 @@
       // Remove this divider, append the app, then re-append the divider.
       var lastDivider = app.grid.getLastIfDivider();
       this.addIconToGrid(application);
-      var svApp = Configurator.getSingleVariantApp(application.manifestURL);
+      var svApp = configurator.getSingleVariantApp(application.manifestURL);
+console.log("************* CJC application::install --> *****************");
       var lastElem = app.grid.getPostLastIcon();
-      if (Configurator.isSimPresentOnFirstBoot && svApp &&
+console.log("CJC application::install --> lastElem:"+lastElem + ":" +app.grid._grid.items[lastElem].detail.manifestURL);
+      if (configurator.isSimPresentOnFirstBoot && svApp &&
           !this.isPreviouslyInstalled(application.manifestURL) &&
           svApp.location < lastElem ) {
+console.log("CJC recolocar de:" + lastElem +" to " +svApp.location); 
         app.grid.rearrange(lastElem, svApp.location);
-        moveAHead(svApp.location + 1);
+        _moveAHead(svApp.location + 1);
         this.addPreviouslyInstalledSvApp(application.manifestURL);
         app.itemStore.savePrevInstalledSvApp(this.svPreviouslyInstalledApps);
       }
       app.grid.addItem(lastDivider);
 
       app.grid.render();
+var items = app.grid.getItems();
+console.log("CJC application::install salver:");
+for (var i = 0, iLen = items.length; i<iLen;i++){
+console.log('CJC item:'+items[i].detail.manifestURL+':'+items[i].detail.index);
+}
       app.itemStore.save(app.grid.getItems());
     }
 
-    function moveAHead(startPos) {
+    /**
+     * Through all items in the grid from startPos.
+     * For each one that is a singleVariantApp if its position is higher than the
+     * desired location (svApp.location), move the item one position ahead.
+     * This is a auxiliary function, at the end all singlevariant apps will be sorted
+     * but in intermediate step they may be unsorted
+     * @param {number} startPos - Starting position
+     */
+    function _moveAHead(startPos) {
       var elems = app.grid.getItems();
-      for (var i = startPos, len = elems.length; i < len; i++) {
+      for (var i = startPos, iLen = elems.length; i < iLen; i++) {
         var item = elems[i];
         //At the moment SV only configures apps
         if (item instanceof Icon) {
           //elems[i].identifier returns manifestURL-entry_points
-          var svApp = Configurator.getSingleVariantApp(elems[i].identifier);
+          var svApp = configurator.getSingleVariantApp(elems[i].identifier);
+console.log("moveAHead:"+JSON.stringify(svApp));
           if (svApp && i > svApp.location) {
             app.grid.rearrange(i, i - 1);
           }
@@ -81,7 +97,7 @@
     }
 
     appMgr.oninstall = function oninstall(event) {
-      if (Configurator.isSingleVariantReady) {
+      if (configurator.isSingleVariantReady) {
         install.bind(this)(event.application);
       } else {
         pendingInstallRequests.push(install.bind(this, event.application));
@@ -131,7 +147,6 @@
       toAdd.forEach(function _toAdd(newApp) {
         this.addIconToGrid(newApp.app);
       }, this);
-
       app.itemStore.save(app.grid.getItems());
     },
 

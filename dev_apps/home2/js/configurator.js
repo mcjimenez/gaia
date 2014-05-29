@@ -1,9 +1,9 @@
 /* global app, IccHelper */
-/* exported Configurator */
+/* exported configurator */
 
 'use strict';
 
-var Configurator = (function() {
+var configurator = (function() {
 
   // We're going to use the mcc_mnc as a semaphore as well as to store its
   // value during the singleVariant file's processing time.

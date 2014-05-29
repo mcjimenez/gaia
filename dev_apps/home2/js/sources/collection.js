@@ -54,6 +54,7 @@
         case 'added':
         case 'updated':
           this.addIconToGrid(e.target);
+console.log("collection::handleEvent --> save");
           app.itemStore.save(app.grid.getItems());
           break;
         case 'removed':

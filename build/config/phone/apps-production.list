@@ -5,6 +5,7 @@ apps/calendar
 apps/callscreen
 apps/camera
 apps/clock
+apps/collection
 apps/communications
 apps/costcontrol
 apps/email
@@ -29,4 +30,5 @@ apps/system
 apps/video
 apps/wallpaper
 apps/wappush
+dev_apps/home2
 outoftree_apps/*

@@ -1,4 +1,5 @@
 'use strict';
+
 /* global ApplicationSource */
 /* global Bookmark */
 /* global BookmarkSource */
@@ -6,7 +7,7 @@
 /* global CollectionSource */
 /* global dispatchEvent */
 /* global Divider */
-/* global Configurator */
+/* global configurator */
 
 (function(exports) {
 
@@ -39,9 +40,9 @@
       }
     }
 
-    for (var i = 0, maxI = order.length; i < maxI; i++) {
+    for (var i = 0, iLen = order.length; i < iLen; i++) {
       // Add all entries of current section
-      for (var j = 0, maxJ = order[i].length; j < maxJ; j++) {
+      for (var j = 0, jLen = order[i].length; j < jLen; j++) {
         var ind = entries.findIndex(
                            isEqual.bind(null, order[i][j]));
         if (ind >= 0) {
@@ -49,7 +50,7 @@
         }
       }
       // If we have more sections add a divider
-      if (i < maxI - 1) {
+      if (i < iLen - 1) {
         newEntries.push(new Divider());
       }
     }
@@ -58,8 +59,8 @@
         newEntries.push(new Divider());
         newEntries = newEntries.concat(entries);
     }
-    for (var index = 0, len = newEntries.length; index < len; index++) {
-      newEntries[i].detail.index = index;
+    for (i = 0, iLen = newEntries.length; i < iLen; i++) {
+      newEntries[i].detail.index = i;
     }
    return newEntries;
   }
@@ -81,17 +82,14 @@
   function newTxn(storeName, txnType, withTxnAndStore, successCb) {
     var txn = db.transaction([storeName], txnType);
     var store = txn.objectStore(storeName);
-
     txn.oncomplete = function(event) {
       if (successCb) {
         successCb(event);
       }
     };
-
     txn.onerror = function(event) {
       console.warn('Error during transaction.');
     };
-
     withTxnAndStore(txn, store);
   }
 
@@ -101,9 +99,10 @@
     this.bookmarkSource = new BookmarkSource(this);
     this.collectionSource = new CollectionSource(this);
 
-    this.sources = [this.applicationSource, this.bookmarkSource,
-      this.collectionSource];
+//    this.sources = [this.applicationSource, this.bookmarkSource,
+//                    this.collectionSource];
 
+this.sources = [this.applicationSource];
     this.ready = false;
 
     var isEmpty = false;
@@ -113,10 +112,12 @@
 
     request.onsuccess = function _onsuccess() {
       db = request.result;
-
       if (isEmpty) {
         self.populate(
-          self.fetch.bind(self, self.synchronize.bind(self)));
+          self.fetch.bind(self, function () {
+            self.synchronize();
+            self.gridOrder = null;
+          }));
       } else {
         self.initSources(
           self.fetch.bind(self, self.synchronize.bind(self)));
@@ -135,7 +136,7 @@
 
           objectStore.createIndex('index', 'index', { unique: true });
           isEmpty = true;
-          self.gridOrder = Configurator.getGrid();
+          self.gridOrder = configurator.getGrid();
           var objectSV = db.createObjectStore(DB_SV_APP_STORE_NAME,
             { keyPath: 'manifestURL' });
           objectSV.createIndex('indexSV', 'indexSV', { unique: true });
@@ -184,7 +185,6 @@
      */
     save: function(entries, aNext) {
       entries = sort(entries, this.gridOrder);
-      this.gridOrder = null;
       // The initial config is simply the list of apps
       this.saveTable(DB_ITEM_STORE, entries, 'detail', aNext);
     },

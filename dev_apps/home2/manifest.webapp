@@ -10,6 +10,7 @@
   },
   "permissions": {
     "mobilenetwork":{},
+    "mobileconnection":{},
     "open-remote-window":{},
     "storage": {},
     "webapps-manage": {},

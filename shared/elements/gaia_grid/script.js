@@ -85,6 +85,11 @@ window.GaiaGrid = (function(win) {
   proto.addIcon = function(identifier, obj) {
     this._grid.icons[identifier] = obj;
     this._grid.items.push(obj);
+console.log('CJC addIcon --> items');
+for (var i = 0, iLen= this._grid.items.length;i<iLen;i++) {
+console.log('CJC '+this._grid.items[i].detail.manifestURL+':'+
+            this._grid.items[i].detail.index);
+}
   };
 
   /**
@@ -133,6 +138,9 @@ window.GaiaGrid = (function(win) {
     return null;
   };
 
+  /**
+   * Returns the position of the last item which is not a divider
+   */
   proto.getPostLastIcon = function() {
     var items = this._grid.items;
     for (var i = this._grid.items.length - 1; i >= 0; i--) {
@@ -142,6 +150,11 @@ window.GaiaGrid = (function(win) {
     }
   };
 
+  /**
+   * Move item on orig position to dst position
+   * @param {number} orig Element's position to move
+   * @param {number} orig New position of the item
+   */
   proto.rearrange = function(orig, dst) {
     if (typeof this._grid.dragdrop.rearrange === 'function') {
       this._grid.dragdrop.rearrange(orig, dst);

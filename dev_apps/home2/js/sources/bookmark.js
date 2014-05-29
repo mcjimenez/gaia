@@ -54,7 +54,6 @@
       for (i = 0; i < toAdd.length; i++) {
         this.addIconToGrid(toAdd[i].detail);
       }
-
       app.itemStore.save(app.grid.getItems());
     },
 
