@@ -7,4 +7,5 @@ function MockDivider() {
     type: 'divider',
     index: 0
   };
+  this.persistToDB = true;
 }

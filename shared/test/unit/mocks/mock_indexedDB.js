@@ -3,7 +3,6 @@
 /* exported MockIndexedDB */
 
 function MockIndexedDB() {
-console.log('CJC mock MockIndexedDB');
 
   var transRequest = {};
 
@@ -34,46 +33,27 @@ console.log('CJC mock MockIndexedDB');
     this.deletedData = [];
     this.storedData = storedData || {};
     this.options = {};
-    this.indexName = [];
 
     var self = this;
 
     var objectStore = {
-      createIndex: function(name, keyPath, optional) {
-console.log('mock createIndex:'+name);
-        self.indexName[self.indexName.length] = name;
-console.log('indices:'+self.indexName);
-      }
+      createIndex: dummyFunction
     };
 
 
     this.objectStoreNames = ['fakeObjStore'];
     this.createObjectStore = dummyFunction.bind(undefined,
                                                 objectStore);
-console.log('***CJC mock :'+ JSON.stringify(this.createObjectStore));
+
     this.deleteObjectStore = dummyFunction;
     this.transaction = sinon.stub();
     this.objectStore = sinon.stub();
     this.get = dummyFunction;
     this.put = dummyFunction;
-/*
-    this.put = function (data) {
-console.log('CJC EKECUTA PIUT'+index);
-      var index = self.indexName || Object.keys(data)[0];
-console.log('CJC put:'+index);
-      self.storedData[index] = data;
-    };
-*/
     this.delete = dummyFunction;
     this.openCursor = dummyFunction;
     this.close = dummyFunction;
     this.clear = dummyFunction;
-/*
-    this.clear = function() {
-console.log('CJC ejecuta clear');
-      self.storedData = {};
-    };
-*/
     this.index = sinon.stub();
     this.index.returns(this);
     this.transaction.returns(this);
@@ -84,12 +64,7 @@ console.log('CJC ejecuta clear');
     });
 
     sinon.stub(this, 'put', function(data) {
-console.log('CJC PUUUUTTTT');
-      self.receivedData.put(data);
-      var index = self.indexName.length > 0 && self.indexName[0] ||
-                  Object.keys(data)[0];
-console.log('CJC INDICE:::'+index);
-      self.storedData[data[index]] = data;
+      self.receivedData.push(data);
       return transRequest;
     });
 
@@ -98,18 +73,14 @@ console.log('CJC INDICE:::'+index);
     });
 
     sinon.stub(this, 'openCursor', function() {
-console.log('CJC openCursor!!!');
       if (self.options.cursorOpenInError === true) {
-console.log('CJC errores!!!');
         return _getRequest(null, {
           isInError: true
         });
       }
       if (Object.keys(self.storedData).length === 0) {
-console.log('CJC sin datos!!!');
         return _getRequest(null);
       }
-console.log('CJC crearCursor!!!');
 
       var cursor = new FakeCursor(self.storedData);
       var req = _getRequest(cursor);
@@ -154,7 +125,6 @@ console.log('CJC crearCursor!!!');
   };
 
   sinon.stub(window.indexedDB, 'open', function(name) {
-console.log('CJC indexedDB::open');
     if (Array.isArray(self.options.inErrorDbs) &&
         self.options.inErrorDbs.indexOf(name) !== -1) {
       return _getRequest(null, {
@@ -163,7 +133,6 @@ console.log('CJC indexedDB::open');
     }
 
     var db = new FakeDB(name, self.storedDataDbs[name]);
-console.log('CJC name:'+name);
     dbs.push(db);
     var outReq = _getRequest(db, {
       upgradeNeeded: (Array.isArray(self.options.upgradeNeededDbs) &&
@@ -180,7 +149,6 @@ console.log('CJC name:'+name);
 
 
   function _getRequest(result, opts) {
-console.log('CJC _getRequest::opts:' + JSON.stringify(opts));
     var options = opts || {};
     return {
       result: result,

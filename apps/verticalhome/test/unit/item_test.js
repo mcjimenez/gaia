@@ -1,6 +1,8 @@
 'use strict';
 
-/* global MocksHelper, MockIndexedDB, ItemStore  */
+/* global MocksHelper, MockIndexedDB, ItemStore, configurator  */
+/* exported itemStore */
+
 require('/shared/test/unit/mocks/mock_indexedDB.js');
 require('/test/unit/mock_application_source.js');
 require('/test/unit/mock_bookmark_source.js');
@@ -98,16 +100,32 @@ suite('item.js >', function() {
     };
 
     var itemStore = new ItemStore();
+    itemStore.nextPosition;
 
-for (var i in mockIndexedDB.dbs[0].storedData){
-    console.log('CJC TESTS!!!!:'+
-JSON.stringify(mockIndexedDB.dbs[0].storedData[i]));
-}
+    var savedElem = mockIndexedDB.dbs[0].receivedData;
+    var grid = configurator.getGrid();
 
-console.log('CJC temp para q no catne el hint ' + itemStore);
-for (var j in mockIndexedDB.dbs[0].receivedData){
-    console.log('CJC TESTS:'+
-JSON.stringify(mockIndexedDB.dbs[0].receivedData[j]));
-}
+    var gridInd = 0;
+    var keys = Object.keys(savedElem);
+    for (var i = 0, iLen = savedElem.length, gLen = grid.length;
+         i < iLen && gridInd < gLen; i++) {
+      if (savedElem[i].type === 'app') {
+          assert.equal(savedElem[i].manifestURL, grid[gridInd][0].manifestURL);
+        if (savedElem[i].entryPoint) {
+          assert.equal(savedElem[i].entryPoint, grid[gridInd][0].entry_point);
+        }
+        grid[gridInd].shift();
+      } else if (savedElem[i].type === 'divider') {
+        gridInd += 1;
+      }
+    }
+    var moreDivider = false;
+    for (;i < iLen && !moreDivider; i++) {
+      moreDivider = savedElem[keys[i]].type === 'divider';
+    }
+    assert.isFalse(moreDivider);
+    for (i = 0, iLen = grid.length; i < iLen; i++) {
+      assert.equal(grid[i].length, 0);
+    }
   });
 });

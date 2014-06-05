@@ -67,16 +67,13 @@
   }
 
   function loadTable(table, indexName, iterator, aNext) {
-console.log('CJC itemstore::loadTable:');
     newTxn(table, 'readonly', function(txn, store) {
       var index = store.index(indexName);
       index.openCursor().onsuccess = function onsuccess(event) {
         var cursor = event.target.result;
         if (!cursor) {
-console.log('CJC cursor nulo****');
           return;
         }
-console.log('CJC itemstore::loadTable --> value'+JSON.stringify(cursor.value));
         iterator(cursor.value);
         cursor.continue();
       };
@@ -101,7 +98,6 @@ console.log('CJC itemstore::loadTable --> value'+JSON.stringify(cursor.value));
   }
 
   function ItemStore() {
-console.log('CJC ItemStore:new --> dentro');
     var self = this;
     this.applicationSource = new ApplicationSource(this);
     this.bookmarkSource = new BookmarkSource(this);
@@ -135,7 +131,6 @@ console.log('CJC ItemStore:new --> dentro');
     };
 
     request.onsuccess = function _onsuccess() {
-console.log('CJC ItemStore:new --> onsuccess open');
       db = request.result;
 
       if (isEmpty) {
@@ -175,7 +170,6 @@ console.log('CJC ItemStore:new --> onsuccess open');
     saveTable: function(table, objArr, column, checkPersist, aNext) {
       newTxn(table, 'readwrite', function(txn, store) {
         store.clear();
-console.log('CJC ELTOS!!!'+objArr.length);
         for (var i = 0, iLen = objArr.length; i < iLen; i++) {
           if (!checkPersist || (checkPersist && objArr[i].persistToDB)) {
             store.put(column?objArr[i][column]:objArr[i]);
@@ -192,10 +186,7 @@ console.log('CJC ELTOS!!!'+objArr.length);
      */
     save: function(entries, aNext) {
       entries = sort(entries, this.gridOrder);
-console.log('********CJC save********');
-for (var i = 0, iLen= entries.length;i<iLen;i++){
-console.log('save!!!:'+JSON.stringify(entries[i]));
-}
+
       this.gridOrder = null;
       // The initial config is simply the list of apps
       this.saveTable(DB_ITEM_STORE, entries, 'detail', true, aNext);
@@ -213,7 +204,6 @@ console.log('save!!!:'+JSON.stringify(entries[i]));
      * @param {Function} callback A function to call after fetching all items.
      */
     fetch: function(callback) {
-console.log('CJC item:fetch');
       var collected = [];
 
       function iterator(value) {

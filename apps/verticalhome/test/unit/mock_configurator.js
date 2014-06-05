@@ -37,4 +37,5 @@ var configurator = {
   }
 };
 
+
 window.configurator = configurator;
