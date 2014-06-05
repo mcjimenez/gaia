@@ -24,7 +24,8 @@ var configurator = (function() {
   function loadFile(file, success, error) {
     try {
       var xhr = new XMLHttpRequest();
-      xhr.overrideMimeType('application/json');
+//      xhr.overrideMimeType('application/json');
+      xhr.responseType = 'json';
       xhr.open('GET', file, true);
 
       xhr.onload = function _xhrOnLoadFile(evt) {
@@ -184,6 +185,8 @@ var configurator = (function() {
   };
 
   function load() {
+    conf = {};
+    gaiaGridLayoutReady = false;
     window.addEventListener('gaiagrid-layout-ready', globalHandleEvent);
     loadFile('js/init.json', onLoadInitJSON, onErrorInitJSON);
   }
@@ -220,5 +223,4 @@ var configurator = (function() {
 
     loadSettingSIMPresent: loadSettingSIMPresent
   };
-
 }());

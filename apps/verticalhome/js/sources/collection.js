@@ -40,7 +40,6 @@
         Object.keys(systemCollections).forEach(function(id) {
           self.entries.push(new Collection(systemCollections[id]));
         });
-
         success(self.entries);
       }, success);
     },

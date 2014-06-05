@@ -69,7 +69,6 @@
         Object.keys(systemBookmarks).forEach(function(id) {
           self.entries.push(new Bookmark(systemBookmarks[id]));
         });
-
         success(self.entries);
       }, success);
     },
