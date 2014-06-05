@@ -1,7 +1,6 @@
 'use strict';
 
 /* global MocksHelper, MockIndexedDB, ItemStore, configurator  */
-/* exported itemStore */
 
 require('/shared/test/unit/mocks/mock_indexedDB.js');
 require('/test/unit/mock_application_source.js');
