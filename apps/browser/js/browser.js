@@ -271,6 +271,7 @@ var Browser = {
    * @param {Function} callback Called with config data object or null.
    */
   getConfigurationData: function browser_getDefaultData(variant, callback) {
+console.log('CJC browser::getConfigurationData --> ' + variant);
     var DEFAULT_MCC = '000';
     var DEFAULT_MNC = '000';
 

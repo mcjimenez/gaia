@@ -12,7 +12,7 @@ var TopSitesCustomizer = (function() {
       }
       var settings = navigator.mozSettings;
       if (!settings) {
-        console.error('TopSitesCustomizer. Settings is not available');
+        console.error('BrowserCustomizer. Settings is not available');
         return;
       }
 
@@ -24,12 +24,12 @@ var TopSitesCustomizer = (function() {
 
       if (Object.keys(settingsValue).length) {
         settings.createLock().set({
-          'operatorResources.data.topsites': settingsValue
+          'operatorResources.data.browser': settingsValue
         });
       }
 
     } catch (e) {
-      console.error('TopSitesCustomizer. Error recovering datas. ' +
+      console.error('BrowserCustomizer. Error recovering datas. ' +
                     'We will use default values. ' + e);
     }
   };
