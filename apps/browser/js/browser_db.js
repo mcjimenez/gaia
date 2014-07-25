@@ -1,6 +1,6 @@
 'use strict';
 
-// Support different versions of IndexedDB
+// Support different versions of IndexedDB.
 var idb = window.indexedDB || window.webkitIndexedDB ||
   window.mozIndexedDB || window.msIndexedDB;
 
